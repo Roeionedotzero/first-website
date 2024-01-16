@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wie betaalt het volgende rondje?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 100px auto;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                #f1c40f 0deg 45deg,
+                #e74c3c 45deg 90deg,
+                #9b59b6 90deg 135deg,
+                #3498db 135deg 180deg,
+                #1abc9c 180deg 225deg,
+                #27ae60 225deg 270deg,
+                #f39c12 270deg 315deg,
+                #2922e6 315deg 360deg
+            );
+            position: absolute;
+            transform-origin: 50% 50%;
+            transform: rotate(0deg);
+        }
+
+        .wheel::after {
+            content: "";
+            display: block;
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .needle {
+            position: absolute;
+            width: 2px;
+            height: 75px;
+            background-color: red;
+            top: calc(-75px + 37.5px);
+            left: 50%;
+            transform: translateX(-1px) rotate(0deg);
+            transform-origin: 50% 100%;
+            box-shadow: 0px 0px 10px white;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .legend {
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        .legend-item::before {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 50%;
+        }
+
+        .legend-item.roei::before { background-color: #f1c40f; }
+        .legend-item.bregje::before { background-color: #e74c3c; }
+        .legend-item.het-figuur::before { background-color: #9b59b6; }
+        .legend-item.dremmen::before { background-color: #3498db; }
+        .legend-item.shelly::before { background-color: #1abc9c; }
+        .legend-item.sexy-lexy::before { background-color: #27ae60; }
+        .legend-item.the-china-man::before { background-color: #f39c12; }
+        .legend-item.gewoon-iemand::before { background-color: #2922e6; } /* Aangepaste kleur voor "Gewoon Iemand" */
+
+        .result {
+            display: none;
+            font-size: 24px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Wie betaalt het volgende rondje?</h1>
+    <div class="wheel-container">
+        <div class="wheel"></div>
+        <div class="needle"></div>
+    </div>
+    <button id="spinButton">Draai</button>
+
+    <div class="legend">
+        <div class="legend-item roei">Roei</div>
+        <div class="legend-item bregje">Bregje</div>
+        <div class="legend-item het-figuur">Het Figuur</div>
+        <div class="legend-item dremmen">Dremmen</div>
+        <div class="legend-item shelly">Shelly</div>
+        <div class="legend-item sexy-lexy">Sexy Lexy</div>
+        <div class="legend-item the-china-man">The China Man</div>
+        <div class="legend-item gewoon-iemand">Gewoon Iemand</div> <!-- Voeg "Gewoon Iemand" toe aan de legende -->
+    </div>
+
+    <div class="result" id="result"></div>
+
+    <script>
+        const wheel = document.querySelector(".wheel");
+        const needle = document.querySelector(".needle");
+        const spinButton = document.getElementById("spinButton");
+        const resultDiv = document.getElementById("result");
+
+        const legend = {
+            "#f1c40f": "Roei",
+            "#e74c3c": "Bregje",
+            "#9b59b6": "Het Figuur",
+            "#3498db": "Dremmen",
+            "#1abc9c": "Shelly",
+            "#27ae60": "Sexy Lexy",
+            "#f39c12": "The China Man",
+            "#e60000": "Gewoon Iemand" // Aangepaste kleur voor "Gewoon Iemand"
+        };
+
+        // Functie om de naam te krijgen op basis van de kleur van de naald
+        function getNameByNeedleColor(color) {
+            for (const key in legend) {
+                if (key === color) {
+                    return legend[key];
+                }
+            }
+            return null; // Als er geen overeenkomende kleur wordt gevonden
+        }
+
+        let spinning = false;
+
+        spinButton.addEventListener("click", () => {
+            if (!spinning) {
+                spinning = true;
+                // Genereer een willekeurige rotatiehoek tussen 0 en 359 graden
+                const randomRotation = Math.floor(Math.random() * 360);
+                // Bereken de hoeveelheid extra rotatie om meerdere omwentelingen te voorkomen
+                const extraRotation = Math.floor(Math.random() * 5) * 360;
+                // Bereken de uiteindelijke rotatiehoek
+                const finalRotation = randomRotation + extraRotation;
+
+                // Simuleer het draaien van het rad door de stijl te wijzigen
+                wheel.style.transition = "transform 4s ease-out";
+                wheel.style.transform = `rotate(${finalRotation}deg)`;
+                // Reset de naaldpositie naar boven
+                needle.style.transform = "translateX(-1px) rotate(0deg)";
+
+                // Verberg het resultaat
+                resultDiv.style.display = "none";
+
+                // Voeg een eventlistener toe voor de overgang van het wiel om de uiteindelijke kleur te bepalen
+                wheel.addEventListener("transitionend", () => {
+                    // Haal de huidige kleur van de naald op
+                    const needleBackgroundColor = getComputedStyle(needle).backgroundColor;
+
+                    // Haal de naam op die overeenkomt met de kleur van de naald
+                    const selectedName = getNameByNeedleColor(needleBackgroundColor);
+
+                    // Toon het resultaat als er een naam is geselecteerd
+                    if (selectedName) {
+                        resultDiv.textContent = `Het volgende rondje wordt gehaald door ${selectedName}`;
+                        resultDiv.style.display = "block";
+                    }
+
+                    spinning = false;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
